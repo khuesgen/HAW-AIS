@@ -3,6 +3,10 @@
  */
 package de.hamburg.haw.ais.praktikum2;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 /**
  * @author Kevin Hüsgen
@@ -11,16 +15,23 @@ package de.hamburg.haw.ais.praktikum2;
 
 public class User {
 	
-	private int userId;
-	private String name;
+	private int userID;
+	private String username;
 	private String email;
 	private String password;
+	private int authenticationId;
 	
-	public User(int userId, String name, String email, String password) {
-		this.userId = userId;
-		this.name = name;
+	public User(int userId, String username, String email, String password) {
+		this.userID = userId;
+		this.username = username;
 		this.email = email;
-		this.password = password;		
+		this.password = password;
+		
+		Calendar cal = Calendar.getInstance();
+		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+		
+		String authentication = sdf.format(cal.getTime()) + userId;
+		authenticationId = authentication.hashCode();
 	}
 	
 	public User() {
@@ -28,27 +39,32 @@ public class User {
 	}
 	
 	public int getUserID() {
-		return userId;
+		return userID;
 	}
 	
 	public String getUsername() {
-		return name;
+		return username;
 	}
 	
 	public String getEmail() {
 		return email;
 	}
 	
+	@JsonIgnore
 	public String getPassword() {
 		return password;
 	}
 	
 	public String toString() {
-		return "UserID: " + userId + " Username: " + name + " E-Mail: " + email + " Password: " + password;
+		return "UserID: " + userID + " Username: " + username + " E-Mail: " + email + " Password: " + password;
 	}
 	
 	public boolean validatePassword(String password) {
 		return this.password.equals(password);			
+	}
+	
+	public int getAuthenticationId() {
+		return authenticationId;
 	}
 	
 

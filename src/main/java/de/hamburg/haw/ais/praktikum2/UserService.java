@@ -12,6 +12,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -24,20 +25,16 @@ import javax.ws.rs.core.Response;
 public class UserService {
 	
 	UserDAO users = new UserDAO();
+	static User currentUser = null;
 	
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	@Path("{user}")
-	public User getUsername(@PathParam("user") int userId) {
-		
-		User user = users.getUser(userId);
-		if ( user != null) {
-			return user;
+	@Path("profile")
+	public Response getUsername() {	
+		if (currentUser != null) {
+			return Response.status(Response.Status.OK).entity(currentUser).build();
 		}
-		else {
-			return null;
-		}
-		
+		return Response.status(Response.Status.UNAUTHORIZED).build();	
 	}
 	
 	@POST
@@ -64,15 +61,30 @@ public class UserService {
 	@POST
 	@Path("login")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response login(User user) {
-		if (users.isValidPassword(user.getEmail(), user.getPassword())) {
-			// TODO User einloggen (Session setzen etc.)
-			return Response.status(Response.Status.OK).build();
+	public Response login(Credentials credentials) {
+		User temp = users.getUser(credentials.getUserID());
+		if (temp != null){
+				if (users.isValidAuthenticationId(credentials.getAuthenticationId(), temp)) {
+					currentUser = temp;
+					return Response.status(Response.Status.OK).build();
+				}	
 		}
 		return Response.status(Response.Status.UNAUTHORIZED).build();
 	}
 	
-	//TODO User löschen (@DELETE)
+	@POST
+	@Path("logout")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response logout(Credentials credentials) {
+		User temp = users.getUser(credentials.getUserID());
+		if (temp != null) {
+			if (users.isValidAuthenticationId(credentials.getAuthenticationId(), temp)) {
+				currentUser = null;
+				return Response.status(Response.Status.OK).build();
+			}	
+		}
+		return Response.status(Response.Status.UNAUTHORIZED).build();
+	}
 	
 
 }

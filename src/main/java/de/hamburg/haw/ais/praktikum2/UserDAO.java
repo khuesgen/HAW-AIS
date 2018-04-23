@@ -3,7 +3,9 @@
  */
 package de.hamburg.haw.ais.praktikum2;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -54,6 +56,10 @@ public class UserDAO {
 		}
 		return false;	
 		
+	}
+	
+	public boolean isValidAuthenticationId(int authenticationId, User user) {
+		return user.getAuthenticationId() == authenticationId;
 	}
 	
 	public int generateUserId() {
