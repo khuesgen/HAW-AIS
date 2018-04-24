@@ -3,16 +3,11 @@
  */
 package de.hamburg.haw.ais.praktikum2;
 
-import java.util.List;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -23,17 +18,20 @@ import javax.ws.rs.core.Response;
 
 @Path("user")
 public class UserService {
-	
+
 	UserDAO users = new UserDAO();
-	static User currentUser = null;
 	
-	@GET
+	@POST
 	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("profile")
-	public Response getUsername() {	
-		if (currentUser != null) {
-			return Response.status(Response.Status.OK).entity(currentUser).build();
-		}
+	public Response getUsername(Session session) {	
+		if (users.isValidSession(session)){
+			User temp = users.getUser(session.getUserID());
+			if(users.isValidToken(session.getToken(), temp)) {
+				return Response.status(Response.Status.OK).entity(temp).build();
+			}
+		}							
 		return Response.status(Response.Status.UNAUTHORIZED).build();	
 	}
 	
@@ -50,23 +48,19 @@ public class UserService {
 		return Response.status(Response.Status.BAD_REQUEST).entity(null).build();
 	}
 	
-		
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	@Path("allUsers")
-	public List<User> getAllUsers() {
-		return users.getAllUsers();
-	}
-	
+
 	@POST
 	@Path("login")
 	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
 	public Response login(Credentials credentials) {
-		User temp = users.getUser(credentials.getUserID());
+		User temp = users.getUser(credentials.getEmail());
 		if (temp != null){
-				if (users.isValidAuthenticationId(credentials.getAuthenticationId(), temp)) {
-					currentUser = temp;
-					return Response.status(Response.Status.OK).build();
+				if (users.isValidPassword(credentials.getPassword(), temp)) {
+					String token = temp.generateToken();
+					Session session = new Session(temp.getUserID(),token);
+					users.addSession(session);
+					return Response.status(Response.Status.OK).entity(session).build();
 				}	
 		}
 		return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -75,14 +69,15 @@ public class UserService {
 	@POST
 	@Path("logout")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response logout(Credentials credentials) {
-		User temp = users.getUser(credentials.getUserID());
-		if (temp != null) {
-			if (users.isValidAuthenticationId(credentials.getAuthenticationId(), temp)) {
-				currentUser = null;
+	public Response logout(Session session) {
+		if (users.isValidSession(session)) {
+			User temp = users.getUser(session.getUserID());	
+			if (users.isValidToken(session.getToken(), temp)) {			
+				users.removeSession(session);
 				return Response.status(Response.Status.OK).build();
-			}	
+			}
 		}
+					
 		return Response.status(Response.Status.UNAUTHORIZED).build();
 	}
 	

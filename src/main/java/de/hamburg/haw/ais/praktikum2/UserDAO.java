@@ -3,44 +3,51 @@
  */
 package de.hamburg.haw.ais.praktikum2;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+
 import java.util.Calendar;
-import java.util.List;
+import java.util.Date;
+import java.util.HashMap;
+
 
 /**
  * @author Kevin Hüsgen
  *
  */
 public class UserDAO {
-	private static List<User> users = new ArrayList<User>();
+	private static HashMap<Integer, User> users = new HashMap<Integer, User>();
+	private static HashMap<Integer,Session> sessions = new HashMap<Integer, Session>();
 	private static int pointerId = 0;
 	
 	public UserDAO(){
-		
-		
+			
 	}
 	
 	public User addUser(String name, String email, String password) {
 		if (!exists(email)) {
 			User newUser = new User(generateUserId(),name,email,password);
-			users.add(newUser);
+			users.put(newUser.getUserID(), newUser);
 			return newUser;
 		}
 		return null;
 	}
 	
+	public void addSession(Session s) {
+		sessions.put(s.getUserID(), s);
+	}
+	
+	public void removeSession(Session s) {
+		sessions.remove(s.getUserID());
+	}
+	
 	public User getUser(int userId) {
-		for (User u : users) {
-			if (u.getUserID() == userId) {
-				return u;
-			}
+		if (users.containsKey(userId)) {
+			return users.get(userId);
 		}
 		return null;
 	}
 	
 	public User getUser(String email) {
-		for (User u : users) {
+		for (User u : users.values()) {
 			if (u.getEmail().equals(email)) {
 				return u;
 			}
@@ -49,17 +56,24 @@ public class UserDAO {
 	}
 	
 	
-	public boolean isValidPassword(String email, String passwort) {
-		User temp = getUser(email);
-		if (temp != null) {
-			return temp.validatePassword(passwort);
+	public boolean isValidToken(String token, User user) {
+		Date date = new Date();
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		if (cal.getTime().before(user.getExpirationDate())) {
+			return user.getToken().equals(token);
+		} else {
+			return false;
 		}
-		return false;	
 		
 	}
 	
-	public boolean isValidAuthenticationId(int authenticationId, User user) {
-		return user.getAuthenticationId() == authenticationId;
+	public boolean isValidPassword(String password, User user) {
+		return user.getPassword().equals(password);
+	}
+	
+	public boolean isValidSession(Session session) {
+		return sessions.containsKey(session.getUserID());
 	}
 	
 	public int generateUserId() {
@@ -67,23 +81,14 @@ public class UserDAO {
 		return pointerId;
 	}
 	
-	public List<User> getAllUsers(){
-		return users;
-	}
 	
 	public boolean exists(User user) {
-		boolean exists = false;
-		for (User u : users) {
-			if (u.getUserID() == user.getUserID()) {
-				exists = true;
-			}
-		}
-		return exists;
+		return users.containsValue(user);
 	}
 	
 	public boolean exists(String email) {
 		boolean exists = false;
-		for (User u : users) {
+		for (User u : users.values()) {
 			if (u.getEmail().equals(email)) {	
 				exists = true;
 			}

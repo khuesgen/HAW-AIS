@@ -1,7 +1,6 @@
 package de.hamburg.haw.ais.praktikum2;
 
 import java.io.IOException;
-
 import com.sun.jersey.api.container.httpserver.HttpServerFactory;
 import com.sun.net.httpserver.HttpServer;
 
@@ -13,7 +12,7 @@ public class App
     {
         HttpServer server;
 		try {
-			server = HttpServerFactory.create("http://localhost:8080/rest");
+			server = HttpServerFactory.create("http://localhost:8080/api");
 			server.start();
 		} catch (IllegalArgumentException e) {
 			// TODO Auto-generated catch block

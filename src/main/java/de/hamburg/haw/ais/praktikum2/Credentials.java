@@ -9,12 +9,12 @@ package de.hamburg.haw.ais.praktikum2;
  */
 public class Credentials {
 
-		private int userID;
-		private int authenticationId;
+		private String email;
+		private String password;
 		
-		public Credentials(int userID, int authenticationId) {
-			this.userID = userID;
-			this.authenticationId = authenticationId;
+		public Credentials(String email, String password) {
+			this.email = email;
+			this.password = password;
 		}
 		
 		public Credentials() {
@@ -22,17 +22,17 @@ public class Credentials {
 		}
 
 		/**
-		 * @return the authenticationId
+		 * @return the password
 		 */
-		public int getAuthenticationId() {
-			return authenticationId;
+		public String getPassword() {
+			return password;
 		}
 
 		/**
-		 * @return the userID
+		 * @return the email
 		 */
-		public int getUserID() {
-			return userID;
+		public String getEmail() {
+			return email;
 		}
 
 		

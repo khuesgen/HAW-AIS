@@ -3,9 +3,11 @@
  */
 package de.hamburg.haw.ais.praktikum2;
 
-import java.text.SimpleDateFormat;
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.Calendar;
-
+import java.util.Date;
+import java.util.Random;
 import org.codehaus.jackson.annotate.JsonIgnore;
 
 /**
@@ -19,19 +21,14 @@ public class User {
 	private String username;
 	private String email;
 	private String password;
-	private int authenticationId;
+	private String token;
+	private Date expirationDate;
 	
 	public User(int userId, String username, String email, String password) {
 		this.userID = userId;
 		this.username = username;
 		this.email = email;
 		this.password = password;
-		
-		Calendar cal = Calendar.getInstance();
-		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-		
-		String authentication = sdf.format(cal.getTime()) + userId;
-		authenticationId = authentication.hashCode();
 	}
 	
 	public User() {
@@ -59,12 +56,35 @@ public class User {
 		return "UserID: " + userID + " Username: " + username + " E-Mail: " + email + " Password: " + password;
 	}
 	
-	public boolean validatePassword(String password) {
-		return this.password.equals(password);			
+	
+	public String getToken() {
+		return token;
 	}
 	
-	public int getAuthenticationId() {
-		return authenticationId;
+	@JsonIgnore
+	public Date getExpirationDate() {
+		return expirationDate;
+	}
+	
+	public String getExpirationDateString() {
+		if (expirationDate != null) {
+			return expirationDate.toString();	
+		}
+		return null;
+	}
+		
+	public String generateToken() {
+		Random random = new SecureRandom();
+		this.token = new BigInteger(130,random).toString(32);
+		
+		Date date = new Date();
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		cal.add(Calendar.HOUR, 24);
+		
+		expirationDate = cal.getTime();
+		
+		return token;
 	}
 	
 
